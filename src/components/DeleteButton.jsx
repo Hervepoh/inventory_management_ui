@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { Button } from '@mui/material';
+
 import apiClient from '../utils/apiClient';
 
 /**
@@ -21,8 +23,8 @@ export function DeleteButton({ url, invalidate }) {
   });
 
   return (
-    <button type="button" disabled={isLoading} onClick={() => mutate(url)}>
-      delete
-    </button>
+    <Button variant="text" disabled={isLoading} color="error" onClick={() => mutate()}>
+      Delete
+    </Button>
   );
 }

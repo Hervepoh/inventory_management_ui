@@ -1,14 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import apiClient from 'src/utils/apiClient';
 
-import { DeleteButton } from 'src/components/DeleteButton';
-
-import { Table, TableBody, TableHead, TableRow } from '@mui/material';
-
-// ----------------------------------------------------------------------
+import { Alert, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
 
 /**
  * Renders a single product
@@ -16,24 +12,34 @@ import { Table, TableBody, TableHead, TableRow } from '@mui/material';
  * @returns
  */
 function Product({ id, title, price, cost, stockQuantity, published, url }) {
+  const queryClient = useQueryClient();
+
+  const { isPending, mutate, isSuccess } = useMutation({
+    mutationKey: ['products'],
+    mutationFn: async () => {
+      const response = await apiClient.delete(url);
+    },
+    onSuccess: async () => await queryClient.invalidateQueries({ queryKey: ['products'] }),
+  });
+
   return (
-    <TableRow key={id}>
-      <td className="w-4 p-4">
-        <div className="flex items-center">
+    <TableRow>
+      <TableCell>
+        <div>
           <input id="checkbox-table-search-3" type="checkbox" />
         </div>
-      </td>
-      <th scope="row" className="px-6 py-4 ">
-        {title}
-      </th>
-      <td className="px-6 py-4">{price}</td>
-      <td className="px-6 py-4">{cost}</td>
-      <td className="px-6 py-4">{stockQuantity}</td>
-      <td className="px-6 py-4">{published}</td>
-      <td className="flex items-center px-6 py-4">
-        <DeleteButton url={url} invalidate="products" />
+      </TableCell>
+      <TableCell scope="row">{title}</TableCell>
+      <TableCell>{price}</TableCell>
+      <TableCell>{cost}</TableCell>
+      <TableCell>{stockQuantity}</TableCell>
+      <TableCell>{published}</TableCell>
+      <TableCell className="flex items-center px-6 py-4">
+        <Button variant="text" disabled={isPending} color="error" onClick={() => mutate()}>
+          Delete
+        </Button>
         <Link className="w-7 h-7 bg-blue-600 text-white rounded-full flex justify-center items-center ms-2" />
-      </td>
+      </TableCell>
     </TableRow>
   );
 }
@@ -45,38 +51,27 @@ export default function ProductsPage() {
   });
 
   const renderProducts = () => {
-    if (isLoading) return <h1>Loading..</h1>;
+    if (isLoading) return <Alert severity="info">Loading...</Alert>;
 
-    if (isError) return <h1>Error</h1>;
+    if (isError) return <Alert severity="error">Some Error</Alert>;
 
     return (
       <Table>
         <TableHead>
           <TableRow>
-            <th className="px-6 py-3" scope="col">
-              Title
-            </th>
-            <th className="px-6 py-3" scope="col">
-              Price
-            </th>
-            <th className="px-6 py-3" scope="col">
-              Cost
-            </th>
-            <th className="px-6 py-3" scope="col">
-              Stock Quantity
-            </th>
-            <th className="px-6 py-3" scope="col">
-              Published
-            </th>
-            <th className="px-6 py-3" scope="col">
-              Actions
-            </th>
+            <TableCell>#</TableCell>
+            <TableCell scope="col">Title</TableCell>
+            <TableCell scope="col">Price</TableCell>
+            <TableCell scope="col">Cost</TableCell>
+            <TableCell scope="col">Stock Quantity</TableCell>
+            <TableCell scope="col">Published</TableCell>
+            <TableCell scope="col">Actions</TableCell>
           </TableRow>
         </TableHead>
 
         <TableBody>
           {data?.map((product) => (
-            <Product {...product} />
+            <Product key={product.id} {...product} />
           ))}
         </TableBody>
       </Table>
