@@ -7,18 +7,16 @@ import { useScrollToTop } from 'src/hooks/use-scroll-to-top';
 import Router from 'src/routes/sections';
 import ThemeProvider from 'src/theme';
 
-// ----------------------------------------------------------------------
+const client = new QueryClient();
 
 export default function App() {
   useScrollToTop();
 
-  const client = new QueryClient();
-
   return (
-    <QueryClientProvider client={client}>
-      <ThemeProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={client}>
         <Router />
-      </ThemeProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

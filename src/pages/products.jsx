@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -14,15 +14,20 @@ import {
   Button,
   Switch,
   Checkbox,
+  Stack,
+  Typography,
+  Box,
+  PaginationItem,
+  Pagination,
 } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
 
 const PublishSwitch = ({ url, published }) => {
   const queryClient = useQueryClient();
+
   const { mutate, isPending } = useMutation({
     mutationKey: ['products'],
-    mutationFn: () => {
-      apiClient.patch(`${url}/toggle-publish`);
-    },
+    mutationFn: () => apiClient.patch(`${url}/toggle-publish`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
   });
 
@@ -65,18 +70,29 @@ function Product({ id, title, price, cost, stockQuantity, published, url }) {
   );
 }
 
-export default function ProductsPage() {
+const ProductsTable = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const page = parseInt(searchParams.get('page') ?? 1);
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['products'],
-    queryFn: async () => apiClient.get('products').then((response) => response.data),
+    queryKey: ['products', page],
+    queryFn: async () =>
+      apiClient.get(`products${page ? '?page=' + page : ''}`).then((response) => response.data),
   });
 
-  const renderProducts = () => {
-    if (isLoading) return <Alert severity="info">Loading...</Alert>;
+  if (isLoading) return <Alert severity="info">Loading...</Alert>;
 
-    if (isError) return <Alert severity="error">Some Error</Alert>;
+  if (isError) return <Alert severity="error">Some Error</Alert>;
 
-    return (
+  return (
+    <>
+      <Stack direction="row" my=".5rem">
+        <Box p=".4rem .6rem" bgcolor="primary.lighter" borderRadius="4px" marginLeft="auto">
+          <Typography color="primary.main">Search Results: {data?.meta.total}</Typography>
+        </Box>
+      </Stack>
+
       <Table>
         <TableHead>
           <TableRow>
@@ -91,20 +107,34 @@ export default function ProductsPage() {
         </TableHead>
 
         <TableBody>
-          {data?.map((product) => (
+          {data?.data.map((product) => (
             <Product key={product.id} {...product} />
           ))}
         </TableBody>
       </Table>
-    );
-  };
 
+      <Stack justifyContent="center" direction="row" marginTop="0.5rem">
+        <Box>
+          <Pagination
+            count={data?.meta.last_page}
+            page={page}
+            onChange={(_, value) => setSearchParams((prev) => ({ ...prev, page: value }))}
+          />
+        </Box>
+      </Stack>
+    </>
+  );
+};
+
+const ProductsPage = () => {
   return (
     <>
       <Helmet>
         <title> Products | Minimal UI </title>
       </Helmet>
-      {renderProducts()}
+      <ProductsTable />
     </>
   );
-}
+};
+
+export default ProductsPage;
