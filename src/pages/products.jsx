@@ -13,8 +13,8 @@ import {
   TableRow,
   Button,
   Switch,
+  Checkbox,
 } from '@mui/material';
-import { CheckBox } from '@mui/icons-material';
 
 const PublishSwitch = ({ url, published }) => {
   const queryClient = useQueryClient();
@@ -46,7 +46,7 @@ function Product({ id, title, price, cost, stockQuantity, published, url }) {
   return (
     <TableRow>
       <TableCell>
-        <CheckBox size="small" />
+        <Checkbox size="small" />
       </TableCell>
       <TableCell scope="row">{title}</TableCell>
       <TableCell>{price}</TableCell>
