@@ -4,7 +4,30 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import apiClient from 'src/utils/apiClient';
 
-import { Alert, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
+import {
+  Alert,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Button,
+  Switch,
+} from '@mui/material';
+import { CheckBox } from '@mui/icons-material';
+
+const PublishSwitch = ({ url, published }) => {
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['products'],
+    mutationFn: () => {
+      apiClient.patch(`${url}/toggle-publish`);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
+  });
+
+  return <Switch checked={published} disabled={isPending} onChange={() => mutate()} />;
+};
 
 /**
  * Renders a single product
@@ -14,26 +37,24 @@ import { Alert, Table, TableBody, TableCell, TableHead, TableRow, Button } from 
 function Product({ id, title, price, cost, stockQuantity, published, url }) {
   const queryClient = useQueryClient();
 
-  const { isPending, mutate, isSuccess } = useMutation({
+  const { isPending, mutate } = useMutation({
     mutationKey: ['products'],
-    mutationFn: async () => {
-      const response = await apiClient.delete(url);
-    },
+    mutationFn: async () => await apiClient.delete(url),
     onSuccess: async () => await queryClient.invalidateQueries({ queryKey: ['products'] }),
   });
 
   return (
     <TableRow>
       <TableCell>
-        <div>
-          <input id="checkbox-table-search-3" type="checkbox" />
-        </div>
+        <CheckBox size="small" />
       </TableCell>
       <TableCell scope="row">{title}</TableCell>
       <TableCell>{price}</TableCell>
       <TableCell>{cost}</TableCell>
       <TableCell>{stockQuantity}</TableCell>
-      <TableCell>{published}</TableCell>
+      <TableCell>
+        <PublishSwitch published={published} url={url} />
+      </TableCell>
       <TableCell className="flex items-center px-6 py-4">
         <Button variant="text" disabled={isPending} color="error" onClick={() => mutate()}>
           Delete
