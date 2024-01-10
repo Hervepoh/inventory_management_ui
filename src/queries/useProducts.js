@@ -15,6 +15,7 @@ const useProducts = () => {
 
   return {
     page,
+    setSearchParams,
     data: query.data,
     isLoading: query.isLoading,
     isError: query.isError,

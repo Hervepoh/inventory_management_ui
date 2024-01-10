@@ -12,7 +12,7 @@ import apiClient from '../utils/apiClient';
 export function DeleteButton({ url, invalidate }) {
   const queryClient = useQueryClient();
 
-  const { isLoading, mutate } = useMutation({
+  const { isPending, mutate } = useMutation({
     mutationKey: ['products'],
     mutationFn: async () => {
       const response = await apiClient.delete(url);
@@ -23,7 +23,7 @@ export function DeleteButton({ url, invalidate }) {
   });
 
   return (
-    <Button variant="text" disabled={isLoading} color="error" onClick={() => mutate()}>
+    <Button variant="text" disabled={isPending} color="error" onClick={() => mutate()}>
       Delete
     </Button>
   );

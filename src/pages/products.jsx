@@ -25,9 +25,13 @@ import {
   Container,
   CardActions,
   CardHeader,
+  IconButton,
+  List,
+  ListItem,
 } from '@mui/material';
 import useProducts from 'src/queries/useProducts';
 import React, { useEffect, useState } from 'react';
+import { DeleteButton } from 'src/components/DeleteButton';
 
 const PublishSwitch = ({ url, published }) => {
   const queryClient = useQueryClient();
@@ -84,13 +88,20 @@ const ProductRow = ({ id, title, price, cost, stockQuantity, published, url }) =
  */
 const ProductCard = ({ id, title, price, cost, stockQuantity, published, url }) => {
   return (
-    <Card variant="outlined">
-      <CardActions>
-        <PublishSwitch published={published} url={url}></PublishSwitch>
+    <Card variant="elevation">
+      <CardActions sx={{ justifyContent: 'space-between' }}>
+        <PublishSwitch published={published} url={url} />
+
+        {/* <Box position="relative">
+          <Button>Show</Button>
+          <Box position="absolute">
+            <DeleteButton url={url} invalidate={['products']} />
+          </Box>
+        </Box> */}
       </CardActions>
 
       <CardContent>
-        <Typography>{title}</Typography>
+        <Typography fontSize="1.5rem">{title}</Typography>
         <Typography fontWeight="bold">Price: {price}</Typography>
         <Typography fontWeight="bold">Cost: {cost}</Typography>
         <Typography fontWeight="bold">Stock Quantity: {stockQuantity}</Typography>
@@ -99,11 +110,8 @@ const ProductCard = ({ id, title, price, cost, stockQuantity, published, url }) 
   );
 };
 
-const ProductsTable = () => {
-  const { data, isLoading, isError, page } = useProducts();
-
+const useViewport = () => {
   const tabletBreakPoint = useTheme().breakpoints.values.sm;
-
   const [isTablet, setIsTablet] = useState(window.innerWidth >= tabletBreakPoint);
 
   useEffect(() => {
@@ -113,6 +121,14 @@ const ProductsTable = () => {
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  return { isTablet };
+};
+
+const ProductsTable = () => {
+  const { data, isLoading, isError, page, setSearchParams } = useProducts();
+
+  const { isTablet } = useViewport();
 
   if (isLoading) return <Alert severity="info">Loading...</Alert>;
 
