@@ -86,7 +86,7 @@ const ProductCard = ({ id, title, price, cost, stockQuantity, published, url }) 
   return (
     <Card variant="outlined">
       <CardActions>
-        <PublishSwitch published={published}></PublishSwitch>
+        <PublishSwitch published={published} url={url}></PublishSwitch>
       </CardActions>
 
       <CardContent>
