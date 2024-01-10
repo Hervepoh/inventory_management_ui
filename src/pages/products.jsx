@@ -19,8 +19,15 @@ import {
   Box,
   PaginationItem,
   Pagination,
+  useTheme,
+  Card,
+  CardContent,
+  Container,
+  CardActions,
+  CardHeader,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import useProducts from 'src/queries/useProducts';
+import React, { useEffect, useState } from 'react';
 
 const PublishSwitch = ({ url, published }) => {
   const queryClient = useQueryClient();
@@ -37,9 +44,9 @@ const PublishSwitch = ({ url, published }) => {
 /**
  * Renders a single product
  * @param {import("src/Types").Product} product
- * @returns
+ * @returns {import('react').ReactNode}
  */
-function Product({ id, title, price, cost, stockQuantity, published, url }) {
+const ProductRow = ({ id, title, price, cost, stockQuantity, published, url }) => {
   const queryClient = useQueryClient();
 
   const { isPending, mutate } = useMutation({
@@ -68,50 +75,84 @@ function Product({ id, title, price, cost, stockQuantity, published, url }) {
       </TableCell>
     </TableRow>
   );
-}
+};
+
+/**
+ * Renders a single product
+ * @param {import("src/Types").Product} product
+ * @returns
+ */
+const ProductCard = ({ id, title, price, cost, stockQuantity, published, url }) => {
+  return (
+    <Card variant="outlined">
+      <CardActions>
+        <PublishSwitch published={published}></PublishSwitch>
+      </CardActions>
+
+      <CardContent>
+        <Typography>{title}</Typography>
+        <Typography fontWeight="bold">Price: {price}</Typography>
+        <Typography fontWeight="bold">Cost: {cost}</Typography>
+        <Typography fontWeight="bold">Stock Quantity: {stockQuantity}</Typography>
+      </CardContent>
+    </Card>
+  );
+};
 
 const ProductsTable = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { data, isLoading, isError, page } = useProducts();
 
-  const page = parseInt(searchParams.get('page') ?? 1);
+  const tabletBreakPoint = useTheme().breakpoints.values.sm;
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['products', page],
-    queryFn: async () =>
-      apiClient.get(`products${page ? '?page=' + page : ''}`).then((response) => response.data),
-  });
+  const [isTablet, setIsTablet] = useState(window.innerWidth >= tabletBreakPoint);
+
+  useEffect(() => {
+    const handleResize = (ev) => setIsTablet(window.innerWidth >= tabletBreakPoint);
+
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   if (isLoading) return <Alert severity="info">Loading...</Alert>;
 
   if (isError) return <Alert severity="error">Some Error</Alert>;
 
   return (
-    <>
+    <Container>
       <Stack direction="row" my=".5rem">
         <Box p=".4rem .6rem" bgcolor="primary.lighter" borderRadius="4px" marginLeft="auto">
           <Typography color="primary.main">Search Results: {data?.meta.total}</Typography>
         </Box>
       </Stack>
 
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>#</TableCell>
-            <TableCell scope="col">Title</TableCell>
-            <TableCell scope="col">Price</TableCell>
-            <TableCell scope="col">Cost</TableCell>
-            <TableCell scope="col">Stock Quantity</TableCell>
-            <TableCell scope="col">Published</TableCell>
-            <TableCell scope="col">Actions</TableCell>
-          </TableRow>
-        </TableHead>
+      {isTablet ? (
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>#</TableCell>
+              <TableCell scope="col">Title</TableCell>
+              <TableCell scope="col">Price</TableCell>
+              <TableCell scope="col">Cost</TableCell>
+              <TableCell scope="col">Stock Quantity</TableCell>
+              <TableCell scope="col">Published</TableCell>
+              <TableCell scope="col">Actions</TableCell>
+            </TableRow>
+          </TableHead>
 
-        <TableBody>
+          <TableBody>
+            {data?.data.map((product) => (
+              <ProductRow key={product.id} {...product} />
+            ))}
+          </TableBody>
+        </Table>
+      ) : (
+        <Stack spacing=".5rem">
           {data?.data.map((product) => (
-            <Product key={product.id} {...product} />
+            <ProductCard key={product.id} {...product} />
           ))}
-        </TableBody>
-      </Table>
+        </Stack>
+      )}
 
       <Stack justifyContent="center" direction="row" marginTop="0.5rem">
         <Box>
@@ -122,7 +163,7 @@ const ProductsTable = () => {
           />
         </Box>
       </Stack>
-    </>
+    </Container>
   );
 };
 
