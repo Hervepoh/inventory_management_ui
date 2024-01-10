@@ -19,6 +19,7 @@ const useProducts = () => {
     data: query.data,
     isLoading: query.isLoading,
     isError: query.isError,
+    isSuccess: query.isSuccess,
   };
 };
 

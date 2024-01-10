@@ -1,7 +1,6 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-
 import apiClient from 'src/utils/apiClient';
 
 import {
@@ -17,21 +16,20 @@ import {
   Stack,
   Typography,
   Box,
-  PaginationItem,
   Pagination,
   useTheme,
   Card,
   CardContent,
   Container,
   CardActions,
-  CardHeader,
+  ClickAwayListener,
   IconButton,
-  List,
-  ListItem,
+  CircularProgress,
 } from '@mui/material';
 import useProducts from 'src/queries/useProducts';
 import React, { useEffect, useState } from 'react';
 import { DeleteButton } from 'src/components/DeleteButton';
+import { MoreHorizRounded } from '@mui/icons-material';
 
 const PublishSwitch = ({ url, published }) => {
   const queryClient = useQueryClient();
@@ -42,7 +40,7 @@ const PublishSwitch = ({ url, published }) => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
   });
 
-  return <Switch checked={published} disabled={isPending} onChange={() => mutate()} />;
+  return <Switch size="small" checked={published} disabled={isPending} onChange={() => mutate()} />;
 };
 
 /**
@@ -81,6 +79,29 @@ const ProductRow = ({ id, title, price, cost, stockQuantity, published, url }) =
   );
 };
 
+const OptionsMenu = ({ children }) => {
+  const [open, setOpen] = React.useState(false);
+
+  const handleClick = () => setOpen((prev) => !prev);
+
+  const handleClickAway = () => setOpen(false);
+
+  return (
+    <ClickAwayListener onClickAway={handleClickAway}>
+      <Box sx={{ position: 'relative' }}>
+        <IconButton onClick={handleClick}>
+          <MoreHorizRounded />
+        </IconButton>
+        {open ? (
+          <Box sx={{ position: 'absolute', right: 0, bgcolor: '#f2f2f2', borderRadius: '0.2rem' }}>
+            {children}
+          </Box>
+        ) : null}
+      </Box>
+    </ClickAwayListener>
+  );
+};
+
 /**
  * Renders a single product
  * @param {import("src/Types").Product} product
@@ -90,21 +111,20 @@ const ProductCard = ({ id, title, price, cost, stockQuantity, published, url }) 
   return (
     <Card variant="elevation">
       <CardActions sx={{ justifyContent: 'space-between' }}>
-        <PublishSwitch published={published} url={url} />
+        <Box sx={{ borderRadius: '.6rem', bgcolor: 'primary.lighter', p: '.4rem .6rem' }}>
+          <Typography component="span" color="primary.main">
+            Published:{' '}
+          </Typography>
+          <PublishSwitch published={published} url={url} />
+        </Box>
 
-        {/* <Box position="relative">
-          <Button>Show</Button>
-          <Box position="absolute">
-            <DeleteButton url={url} invalidate={['products']} />
-          </Box>
-        </Box> */}
+        <OptionsMenu>
+          <DeleteButton url={url} invalidate={['products']} />
+        </OptionsMenu>
       </CardActions>
 
       <CardContent>
         <Typography fontSize="1.5rem">{title}</Typography>
-        <Typography fontWeight="bold">Price: {price}</Typography>
-        <Typography fontWeight="bold">Cost: {cost}</Typography>
-        <Typography fontWeight="bold">Stock Quantity: {stockQuantity}</Typography>
       </CardContent>
     </Card>
   );
@@ -115,70 +135,74 @@ const useViewport = () => {
   const [isTablet, setIsTablet] = useState(window.innerWidth >= tabletBreakPoint);
 
   useEffect(() => {
-    const handleResize = (ev) => setIsTablet(window.innerWidth >= tabletBreakPoint);
+    const handleResize = () => setIsTablet(window.innerWidth >= tabletBreakPoint);
 
     window.addEventListener('resize', handleResize);
 
-    return () => window.removeEventListener('resize', handleResize);
+    // return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return { isTablet };
 };
 
 const ProductsTable = () => {
-  const { data, isLoading, isError, page, setSearchParams } = useProducts();
+  const { data, isLoading, isError, isSuccess, page, setSearchParams } = useProducts();
 
   const { isTablet } = useViewport();
 
-  if (isLoading) return <Alert severity="info">Loading...</Alert>;
-
-  if (isError) return <Alert severity="error">Some Error</Alert>;
-
   return (
     <Container>
-      <Stack direction="row" my=".5rem">
-        <Box p=".4rem .6rem" bgcolor="primary.lighter" borderRadius="4px" marginLeft="auto">
-          <Typography color="primary.main">Search Results: {data?.meta.total}</Typography>
-        </Box>
-      </Stack>
+      {isLoading ? <CircularProgress /> : null}
 
-      {isTablet ? (
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>#</TableCell>
-              <TableCell scope="col">Title</TableCell>
-              <TableCell scope="col">Price</TableCell>
-              <TableCell scope="col">Cost</TableCell>
-              <TableCell scope="col">Stock Quantity</TableCell>
-              <TableCell scope="col">Published</TableCell>
-              <TableCell scope="col">Actions</TableCell>
-            </TableRow>
-          </TableHead>
+      {isError ? <Alert severity="error">Some Error</Alert> : null}
 
-          <TableBody>
-            {data?.data.map((product) => (
-              <ProductRow key={product.id} {...product} />
-            ))}
-          </TableBody>
-        </Table>
-      ) : (
-        <Stack spacing=".5rem">
-          {data?.data.map((product) => (
-            <ProductCard key={product.id} {...product} />
-          ))}
-        </Stack>
-      )}
+      {isSuccess ? (
+        <>
+          <Stack direction="row" my=".5rem">
+            <Box p=".4rem .6rem" bgcolor="primary.lighter" borderRadius="4px" marginLeft="auto">
+              <Typography color="primary.main">Search Results: {data?.meta.total}</Typography>
+            </Box>
+          </Stack>
 
-      <Stack justifyContent="center" direction="row" marginTop="0.5rem">
-        <Box>
-          <Pagination
-            count={data?.meta.last_page}
-            page={page}
-            onChange={(_, value) => setSearchParams((prev) => ({ ...prev, page: value }))}
-          />
-        </Box>
-      </Stack>
+          {isTablet ? (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>#</TableCell>
+                  <TableCell scope="col">Title</TableCell>
+                  <TableCell scope="col">Price</TableCell>
+                  <TableCell scope="col">Cost</TableCell>
+                  <TableCell scope="col">Stock Quantity</TableCell>
+                  <TableCell scope="col">Published</TableCell>
+                  <TableCell scope="col">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {data?.data.map((product) => (
+                  <ProductRow key={product.id} {...product} />
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <Stack spacing=".5rem">
+              {data?.data.map((product) => (
+                <ProductCard key={product.id} {...product} />
+              ))}
+            </Stack>
+          )}
+
+          <Stack justifyContent="center" direction="row" marginTop="0.5rem">
+            <Box>
+              <Pagination
+                count={data?.meta.last_page}
+                page={page}
+                onChange={(_, value) => setSearchParams((prev) => ({ ...prev, page: value }))}
+              />
+            </Box>
+          </Stack>
+        </>
+      ) : null}
     </Container>
   );
 };
