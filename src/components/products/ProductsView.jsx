@@ -3,7 +3,7 @@ import ProductsPagination from './ProductsPagination';
 import ProductsTable from './ProductsTable';
 import useViewport from 'src/routes/hooks/useViewPort';
 import ProductsFeed from './ProductsFeed';
-import useProducts from 'src/queries/useProducts';
+import useProducts from 'src/hooks/queries/useProducts';
 
 export default function ProductsView() {
     const { data, isLoading, page, status, setSearchParams } = useProducts();
