@@ -1,6 +1,7 @@
 import { Box, Card, CardActions, CardContent, Typography } from '@mui/material';
 import PublishSwitch from './ui/PublishSwitch';
 import { DeleteButton } from '../DeleteButton';
+import OptionsMenu from './ui/OptionsMenu';
 
 /**
  * Renders a single product

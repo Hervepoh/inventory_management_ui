@@ -22,6 +22,7 @@ const useProducts = () => {
         isLoading: query.isLoading,
         isError: query.isError,
         isSuccess: query.isSuccess,
+        status: query.status,
     };
 };
 

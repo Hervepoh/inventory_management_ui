@@ -4,19 +4,18 @@ import ProductsTable from './ProductsTable';
 import useViewport from 'src/routes/hooks/useViewPort';
 import ProductsFeed from './ProductsFeed';
 import useProducts from 'src/queries/useProducts';
-import ProductsFilter from './ProductsFilter';
 
 export default function ProductsView() {
-    const { data, isLoading, page, setSearchParams } = useProducts();
+    const { data, isLoading, page, status, setSearchParams } = useProducts();
     const { isTablet } = useViewport();
 
     return (
         <Container>
             <>
                 {isTablet ? (
-                    <ProductsTable isLoading={isLoading} products={data} />
+                    <ProductsTable status={status} products={data?.data} />
                 ) : (
-                    <ProductsFeed isLoading={isLoading} products={data} />
+                    <ProductsFeed status={status} products={data?.data} />
                 )}
             </>
 

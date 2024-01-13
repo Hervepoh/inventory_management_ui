@@ -1,9 +1,23 @@
-import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { Alert, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 
-import TableLoading from './ui/TableLoading';
+import TableLoading from '../ui/TableLoading';
+import ProductRow from './ProductRow';
 
-export default function ProductsTable({ isLoading, products }) {
-    // const { data, isLoading } = useProducts();
+/**
+ *
+ * @param { {status: import('@tanstack/react-query').QueryStatus; products: import('src/Types').Product[]|undefined;} }
+ * @returns
+ */
+export default function ProductsTable({ status, products }) {
+    const ProductsError = (
+        <TableRow>
+            <TableCell colSpan={7}>
+                <Alert severity="error" color="error">
+                    Server Error
+                </Alert>
+            </TableCell>
+        </TableRow>
+    );
 
     return (
         <Table>
@@ -19,7 +33,17 @@ export default function ProductsTable({ isLoading, products }) {
                 </TableRow>
             </TableHead>
 
-            <TableBody>{isLoading ? <TableLoading /> : null}</TableBody>
+            <TableBody>
+                {status === 'pending' ? <TableLoading /> : null}
+                {status === 'error' ? ProductsError : null}
+                {status === 'success' ? (
+                    <>
+                        {products.map((product) => (
+                            <ProductRow key={product.id} {...product} />
+                        ))}
+                    </>
+                ) : null}
+            </TableBody>
         </Table>
     );
 }
