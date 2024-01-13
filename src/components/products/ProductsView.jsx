@@ -7,15 +7,15 @@ import useProducts from 'src/hooks/queries/useProducts';
 
 export default function ProductsView() {
     const { data, isLoading, page, status, setSearchParams } = useProducts();
-    const { isTablet } = useViewport();
+    const { isMobile } = useViewport();
 
     return (
         <Container>
             <>
-                {isTablet ? (
-                    <ProductsTable status={status} products={data?.data} />
-                ) : (
+                {isMobile ? (
                     <ProductsFeed status={status} products={data?.data} />
+                ) : (
+                    <ProductsTable status={status} products={data?.data} />
                 )}
             </>
 

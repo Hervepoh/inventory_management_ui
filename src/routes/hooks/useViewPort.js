@@ -1,17 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function useViewport() {
-    const tabletBreakPoint = 800;
+    const resolve = useCallback((windowWidth) => {
+        const tabletBreakPoint = 750;
+        const DesktopBreakPoint = 1000;
 
-    const [isTablet, setIsTablet] = useState(window.innerWidth >= tabletBreakPoint);
+        if (windowWidth < tabletBreakPoint) return 'mobile';
+        if (windowWidth < DesktopBreakPoint) return 'tablet';
+        return 'desktop';
+    }, []);
+
+    const [currentViewport, setCurrentViewport] = useState(resolve(window.innerWidth));
 
     useEffect(() => {
-        const handleResize = (ev) => setIsTablet(ev.target.innerWidth >= tabletBreakPoint);
+        const handleResize = (ev) => setCurrentViewport(resolve(ev.target.innerWidth));
 
         window.addEventListener('resize', handleResize);
 
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    return { isTablet };
+    return {
+        isMobile: currentViewport === 'mobile',
+        isTablet: currentViewport === 'tablet',
+        isDesktop: currentViewport === 'desktop',
+    };
 }
