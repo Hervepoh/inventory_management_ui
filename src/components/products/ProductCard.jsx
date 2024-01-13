@@ -1,5 +1,5 @@
 import { Box, Card, CardActions, CardContent, Typography } from '@mui/material';
-import PublishSwitch from './PublishSwitch';
+import PublishSwitch from './ui/PublishSwitch';
 import { DeleteButton } from '../DeleteButton';
 
 /**

@@ -2,7 +2,7 @@ import { Button, Checkbox, TableCell, TableRow } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import apiClient from 'src/utils/apiClient';
-import PublishSwitch from './PublishSwitch';
+import PublishSwitch from './ui/PublishSwitch';
 
 /**
  * Renders a single product

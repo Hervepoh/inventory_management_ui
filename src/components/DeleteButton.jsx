@@ -10,21 +10,21 @@ import apiClient from '../utils/apiClient';
  * @returns {import('react').ReactNode}
  */
 export function DeleteButton({ url, invalidate }) {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-  const { isPending, mutate } = useMutation({
-    mutationKey: ['products'],
-    mutationFn: async () => {
-      const response = await apiClient.delete(url);
-      if (response.status === 204) {
-        await queryClient.invalidateQueries(invalidate);
-      }
-    },
-  });
+    const { isPending, mutate } = useMutation({
+        mutationKey: ['products'],
+        mutationFn: async () => {
+            const response = await apiClient.delete(url);
+            if (response.status === 204) {
+                await queryClient.invalidateQueries(invalidate);
+            }
+        },
+    });
 
-  return (
-    <Button variant="text" disabled={isPending} color="error" onClick={() => mutate()}>
-      Delete
-    </Button>
-  );
+    return (
+        <Button variant="text" disabled={isPending} color="error" onClick={() => mutate()}>
+            Delete
+        </Button>
+    );
 }

@@ -1,14 +1,14 @@
 import { Helmet } from 'react-helmet-async';
-import ProductsTable from '../products';
+import ProductsView from 'src/components/products/ProductsView';
 
-export default function ProductsView() {
+export default function ProductsPage() {
     return (
         <>
             <Helmet>
                 <title> Products | Minimal UI </title>
             </Helmet>
 
-            <ProductsTable />
+            <ProductsView />
         </>
     );
 }
